@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    environment {
+        REPOSITORY_URL = 'https://github.com/SARTHAKBORDIA/pipeline.git' 
+        TARGET_BRANCH = 'main' 
+    }
+    stages {
+        stage('Checkout Code') { 
+            steps {
+                git branch: "${TARGET_BRANCH}", url: "${REPOSITORY_URL}"
+                echo "showing output of script example.sh.."
+                sh 'chmod +x example.sh && ./example.sh'
+            }
+        }
+        stage('Disk Utilization Check') { 
+            steps {
+                echo 'Verifying Disk Space Usage...'
+                sh 'chmod +x disk.sh && ./disk.sh'
+            }
+        }
+        stage('Manage Processes') { 
+            steps {
+                echo 'Running Process Management Script...'
+                sh 'chmod +x process.sh && ./process.sh'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Review the logs for more information.'
+        }
+    }
+}
