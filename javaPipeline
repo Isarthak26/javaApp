@@ -1,0 +1,64 @@
+pipeline {
+    agent any 
+  
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Enter the branch name to build')
+    }
+
+    tools {
+        maven 'mv' 
+    }
+
+    options {
+        timeout(time: 1, unit: 'MINUTES') 
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                 git branch: "${params.BRANCH_NAME}", url: 'git@github.com:officialarun/Devops-Project.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+           
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Deliver') {
+            steps {
+                
+                sh './jenkins/scripts/deliver.sh'
+            }
+        }
+        stage('Publish Artifacts') {
+            steps {
+              
+                archiveArtifacts artifacts: 'target/my-app-1.0-SNAPSHOT.jar', allowEmptyArchive: false
+                echo "Artifacts published successfully."
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed."
+        }
+        
+    }
+}
